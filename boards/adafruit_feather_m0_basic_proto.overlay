@@ -1,0 +1,68 @@
+/*
+ * Copyright (c)
+ *
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+
+/ {
+    chosen {
+        zephyr,console = &cdc_acm_uart0;
+        zephyr,shell-uart = &cdc_acm_uart0;
+        zephyr,code-partition = &slot0_partition;
+    };
+
+    outputs {
+        compatible = "gpio-leds";
+        ncp_rst: ncp_rst {
+            gpios = <&porta 19 GPIO_ACTIVE_LOW>; /* D12 */
+            label = "NCP RST";
+        };
+    };
+};
+
+&zephyr_udc0 {
+    cdc_acm_uart0: cdc_acm_uart0 {
+        compatible = "zephyr,cdc-acm-uart";
+    };
+};
+
+/* Remove default partitions */
+/delete-node/ &boot_partition;
+/delete-node/ &code_partition;
+/delete-node/ &storage_partition;
+
+&flash0 {
+    partitions {
+        compatible = "fixed-partitions";
+        #address-cells = <1>;
+        #size-cells = <1>;
+
+        boot0_partition: partition@0 {
+            label = "sam-ba";
+            reg = <0x0 DT_SIZE_K(8)>;
+            read-only;
+        };
+        boot_partition: partition@2000 {
+            label = "mcuboot";
+            reg = <0x0002000 DT_SIZE_K(32)>;
+            read-only;
+        };
+        slot0_partition: partition@A000 {
+            label = "image-0";
+            reg = <0x000A000 DT_SIZE_K(92)>;
+        };
+        slot1_partition: partition@21000 {
+            label = "image-1";
+            reg = <0x0021000 DT_SIZE_K(92)>;
+        };
+        nvs_partition: partition@38000 {
+            label = "nvs";
+            reg = <0x0038000 DT_SIZE_K(24)>;
+        };
+        scratch_partition: partition@3E000 {
+            label = "scratch";
+            reg = <0x003E000 DT_SIZE_K(8)>;
+        };
+    };
+};
